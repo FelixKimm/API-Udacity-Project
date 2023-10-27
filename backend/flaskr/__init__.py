@@ -38,7 +38,7 @@ def create_app(test_config=None):
             "Access-Control-Allow-Headers", "Content-Type, Authorization, true"
         )
         response.headers.add(
-            "Access-Control-Allow-Headers", "GET, POST, PATCH, DELETE, OPTION"
+            "Access-Control-Allow-Headers", "GET, POST, PATCH, DELETE, OPTIONS"
         )
         return response
 
@@ -78,7 +78,7 @@ def create_app(test_config=None):
 
     @app.route('/questions')
     def get_questions():
-        questions = Question.query.all()
+        questions = Question.query.order_by(Question.category).all()
         categories = Category.query.order_by(Category.id).all()
         cur_questions = paginate_questions(request, questions)
 
@@ -178,7 +178,7 @@ def create_app(test_config=None):
 
         try:
             if search:
-                selection = Question.query.filter_by(Question.id).filter(Question.question.ilike("%{}".format(search)))
+                selection = Question.query.filter(Question.question.ilike("%{}%".format(search)))
 
                 current = paginate_questions(request, selection)
 
@@ -232,15 +232,31 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
-    app.route('/quizzes', methods=["POST"])
-    def play_trivia():
+    @app.route('/quizzes', methods=["POST"])
+    def play_quiz():
         try:
             body = request.get_json()
+            previous_questions = body.get('previous_questions', [])
+            quiz_category = body.get('quiz_category', None)
 
-            print(body)
+            if quiz_category:
+                category_id = quiz_category['id']
+                questions = Question.query.filter(Question.category == category_id).all()
+            else:
+                questions = Question.query.all()
+            
+            if questions:
+                randomized = random.choice(questions)
+            else:
+                randomized = None
+
+            return jsonify({
+                "success": True,
+                "question": randomized.format()
+            })
 
         except:
-            abort(400)
+            abort(422)
 
     """
     @TODO:
@@ -255,6 +271,10 @@ def create_app(test_config=None):
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({"success": False, "error": 404, "message": "resource not found"}), 404
+
+    @app.errorhandler(405)
+    def not_allowed(error):
+        return jsonify({"success": False, "error": 405, "message": "method not allowed"}), 405
 
     @app.errorhandler(422)
     def unprocessable(error):
