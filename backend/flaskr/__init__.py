@@ -199,6 +199,27 @@ def create_app(test_config=None):
     category to be shown.
     """
     
+    @app.route('/categories/<int:id>/questions', methods=["GET"])
+    def get_categories_questions(id):
+        try:
+            category = Category.query.get(id)
+
+            if category is None:
+                abort(404)
+
+            selection = Question.query.filter_by(category=category.id).all()
+            pagination = paginate_questions(request, selection)
+
+            return jsonify({
+                "success": True,
+                "questions": pagination,
+                "total_question": len(Question.query.all()),
+                "current_category": category.type
+            })
+        except:
+            abort(404)
+
+
     """
     @TODO:
     Create a POST endpoint to get questions to play the quiz.
@@ -211,11 +232,37 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
+    app.route('/quizzes', methods=["POST"])
+    def play_trivia():
+        try:
+            body = request.get_json()
+
+            print(body)
+
+        except:
+            abort(400)
+
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({"success": False, "error": 400, "message": "bad request"}), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({"success": False, "error": 404, "message": "resource not found"}), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({"success": False, "error": 422, "message": "unprocessable"}), 422
+
+    @app.errorhandler(500)
+    def server_error(error):
+        return jsonify({"success": False, "error": 500, "message": "server error"}), 500
 
     return app
 
