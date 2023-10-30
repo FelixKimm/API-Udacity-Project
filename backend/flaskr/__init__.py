@@ -14,6 +14,9 @@ def paginate_questions(request, selection):
     start = (page - 1) * 10
     end = start + 10
 
+    if start < 0 or start >= len(selection):
+        abort(404)
+
     questions = [question.format() for question in selection]
     current_question = questions[start:end]
 
@@ -53,7 +56,7 @@ def create_app(test_config=None):
     def get_categories():
 
         categories = Category.query.order_by(Category.id).all()
-        category_list = [{'id': category.id, 'type': category.type} for category in categories]
+        category_list = {item.id: item.type for item in categories}
 
         if len(categories) == 0:
             abort(404)
@@ -89,7 +92,7 @@ def create_app(test_config=None):
             "success": True,
             "questions": cur_questions,
             "total_questions": len(questions),
-            "categories": [{'id': category.id, 'type': category.type} for category in categories]
+            "categories": {item.id: item.type for item in categories}
         })
     """
     @TODO:
@@ -132,12 +135,14 @@ def create_app(test_config=None):
     def create_question():
         body = request.get_json()
 
+
         new_question = body.get('question')
         new_answer = body.get('answer')
         new_category = body.get('category')
         new_difficulty = body.get('difficulty')
 
-        if (new_question, new_answer, new_category, new_difficulty) == None:
+        if not ('question' in body and 'answer' in body and
+                'difficulty' in body and 'category' in body):
             abort(422)
 
         try:
@@ -173,8 +178,11 @@ def create_app(test_config=None):
     @app.route('/questions/search', methods=["POST"])
     def search_questions():
         body = request.get_json()
-
+        
         search = body.get("searchTerm", None)
+
+        if search is None:
+            abort(404)
 
         try:
             if search:
