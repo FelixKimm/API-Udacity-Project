@@ -186,7 +186,7 @@ def create_app(test_config=None):
 
         try:
             if search:
-                selection = Question.query.filter(Question.question.ilike("%{}%".format(search)))
+                selection = Question.query.filter(Question.question.ilike("%{search}%")).all
 
                 current = paginate_questions(request, selection)
 
@@ -248,13 +248,14 @@ def create_app(test_config=None):
             quiz_category = body.get('quiz_category', None)
 
             if quiz_category:
-                category_id = quiz_category['id']
-                questions = Question.query.filter(Question.category == category_id).all()
-            else:
-                questions = Question.query.all()
+                get_category = quiz_category['id']
+                if get_category == 0:
+                    show_questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+                else:
+                    show_questions = Question.query.filter(Question.category == get_category, Question.id.notin_(previous_questions)).all()
             
-            if questions:
-                randomized = random.choice(questions)
+            if show_questions:
+                randomized = random.choice(show_questions)
             else:
                 randomized = None
 
