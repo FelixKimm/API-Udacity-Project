@@ -186,7 +186,7 @@ def create_app(test_config=None):
 
         try:
             if search:
-                selection = Question.query.filter(Question.question.ilike(f"%{search}%")).all
+                selection = Question.query.filter(Question.question.ilike(f"%{search}%")).all()
 
                 current = paginate_questions(request, selection)
 
