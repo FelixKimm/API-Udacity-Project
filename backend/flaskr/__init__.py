@@ -244,29 +244,26 @@ def create_app(test_config=None):
     def play_quiz():
         try:
             body = request.get_json()
+            previous_questions = body.get('previous_questions', [])
+            quiz_category = body.get('quiz_category', None)
 
-            category = body.get('quiz_category')
-            previous_questions = body.get('previous_questions')
-
-            # If 'ALL' categories is 'clicked', filter available Qs
-            if category['type'] == 'click':
-                available_questions = Question.query.filter(
-                    Question.id.notin_((previous_questions))).all()
-            # Filter available questions by chosen category & unused questions
+            if quiz_category:
+                get_category = quiz_category['id']
+                if get_category == 0:
+                    show_questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+                else:
+                    show_questions = Question.query.filter(Question.category == get_category, Question.id.notin_(previous_questions)).all()
+            
+            if show_questions:
+                randomized = random.choice(show_questions).format()
             else:
-                available_questions = Question.query.filter_by(
-                    category=category['id']).filter(
-                        Question.id.notin_((previous_questions))).all()
-
-            # randomly select next question from available questions
-            new_question = available_questions[random.randrange(
-                0, len(available_questions))].format() if len(
-                    available_questions) > 0 else None
+                randomized = None
 
             return jsonify({
-                'success': True,
-                'question': new_question
+                "success": True,
+                "question": randomized
             })
+
         except:
             abort(422)
 
