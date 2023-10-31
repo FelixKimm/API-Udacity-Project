@@ -240,9 +240,12 @@ The Trivia API is a REST API, this particular doesn't need an authentication key
 ### POST '/questions/search'
 
 - Searches a question using the input given
-- Returns: the question searched and the total number of questions
+- The request needs a Body(JSON) with a key "searchTerm":
 
-```
+``` 
+{
+    "searchTerm": "testing"
+}
 ```
 
 ### GET '/categories/int:id/questions'
