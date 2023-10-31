@@ -64,12 +64,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
 
-    # def test_delete_question(self):
-    #     res = self.client().delete('/questions/17')
-    #     data =json.loads(res.data)
+    def test_delete_question(self):
+        res = self.client().delete('/questions/26')
+        data =json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data["success"], True)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
 
     def test_422_delete_not_existing_question(self):
         res = self.client().delete('/questions/1234')
@@ -78,12 +78,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data["success"], False)
 
-    # def test_create_questions(self):
-    #     res = self.client().post('/questions', json=self.new_question)
-    #     data = json.loads(res.data)
+    def test_create_questions(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data["success"], True)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
 
     def test_405_create_questions(self):
         res = self.client().post('/questions/1234', json=self.new_question)
@@ -92,14 +92,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 405)
         self.assertEqual(data["success"], False)
 
-    # def test_search_question(self):
-    #     res = self.client().post('/questions/search', json={
-    #          'searchTerm': 'Testing'
-    #     })
-    #     data = json.loads(res.data)
+    def test_search_question(self):
+        res = self.client().post('/questions/search', json={
+             'searchTerm': 'Testing'
+        })
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data["success"], True)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
 
     def test_404_search_question(self):
         res = self.client().post('/questions/search', json={
